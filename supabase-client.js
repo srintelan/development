@@ -5,7 +5,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Setup realtime subscription untuk online users
 let onlineUsersSubscription = null;
 let activityLogsSubscription = null;
 
@@ -53,10 +52,7 @@ export async function loginUser(username, password) {
         localStorage.setItem('userId', data.id);
         localStorage.setItem('username', data.username);
 
-        // Mark user as online
         await markUserOnline(data.id, data.username);
-        
-        // Log activity
         await logActivity(data.id, 'LOGIN', 'User logged in');
 
         return { success: true, user: data };
@@ -113,10 +109,8 @@ export async function logoutUser() {
     try {
         const userId = localStorage.getItem('userId');
         if (userId) {
-            // Log activity before logout
             await logActivity(userId, 'LOGOUT', 'User logged out');
             
-            // Remove from online users
             await supabase
                 .from('online_users')
                 .delete()
@@ -184,10 +178,10 @@ export async function getOnlineUsers() {
     }
 }
 
-// Activity Logging Functions
+// Activity Logging Functions - FIXED VERSION
 export async function logActivity(userId, activityType, description, metadata = null) {
     try {
-        await supabase
+        const { data, error } = await supabase
             .from('activity_logs')
             .insert([{
                 user_id: userId,
@@ -195,28 +189,57 @@ export async function logActivity(userId, activityType, description, metadata = 
                 description: description,
                 metadata: metadata,
                 created_at: new Date().toISOString()
-            }]);
+            }])
+            .select();
+
+        if (error) {
+            console.error('Error logging activity:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+        }
+        
+        return { success: !error, error };
     } catch (err) {
-        console.error('Error logging activity:', err);
+        console.error('Exception logging activity:', err);
+        return { success: false, error: err };
     }
 }
 
 export async function getActivityLogs(limit = 50) {
     try {
-        const { data, error } = await supabase
+        console.log('Fetching activity logs...'); // Debug log
+        
+        // Try simple query first
+        const { data, error, count } = await supabase
             .from('activity_logs')
-            .select(`
-                *,
-                users(username, nik)
-            `)
+            .select('*, users!activity_logs_user_id_fkey(username, nik)', { count: 'exact' })
             .order('created_at', { ascending: false })
             .limit(limit);
 
+        console.log('Activity logs response:', { data, error, count }); // Debug log
+
         if (error) {
             console.error('Error getting activity logs:', error);
-            return [];
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            
+            // Try alternative query without JOIN if foreign key fails
+            const { data: altData, error: altError } = await supabase
+                .from('activity_logs')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(limit);
+            
+            if (altError) {
+                console.error('Alternative query also failed:', altError);
+                return [];
+            }
+            
+            console.log('Using alternative query, got:', altData?.length, 'records');
+            return altData || [];
         }
 
+        console.log('Successfully fetched', data?.length, 'activity logs');
         return data || [];
     } catch (err) {
         console.error('Exception getting activity logs:', err);
@@ -245,6 +268,35 @@ export async function getUserActivityLogs(userId, limit = 20) {
     }
 }
 
+// Test function to check activity_logs table
+export async function testActivityLogsAccess() {
+    try {
+        console.log('Testing activity_logs table access...');
+        
+        const { data, error, count } = await supabase
+            .from('activity_logs')
+            .select('*', { count: 'exact', head: false })
+            .limit(1);
+        
+        console.log('Test results:', { 
+            hasData: !!data, 
+            dataLength: data?.length, 
+            totalCount: count,
+            error: error 
+        });
+        
+        if (error) {
+            console.error('Access test failed:', error);
+            return { success: false, error };
+        }
+        
+        return { success: true, count, sampleData: data };
+    } catch (err) {
+        console.error('Test exception:', err);
+        return { success: false, error: err };
+    }
+}
+
 // Realtime Subscriptions
 export function subscribeToOnlineUsers(callback) {
     onlineUsersSubscription = supabase
@@ -264,6 +316,7 @@ export function subscribeToActivityLogs(callback) {
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'activity_logs' },
             (payload) => {
+                console.log('New activity log received:', payload); // Debug log
                 callback(payload.new);
             }
         )
@@ -302,25 +355,20 @@ export function requireAuth() {
     }
 }
 
-// Handle page visibility to mark user offline when they leave
 document.addEventListener('visibilitychange', async () => {
     if (document.hidden) {
         const userId = localStorage.getItem('userId');
         if (userId) {
-            // Update last_seen but don't remove yet
             await updateUserActivity();
         }
     } else {
-        // User came back, update activity
         await updateUserActivity();
     }
 });
 
-// Handle beforeunload to mark user offline
 window.addEventListener('beforeunload', async () => {
     const userId = localStorage.getItem('userId');
     if (userId) {
-        // Use sendBeacon for reliable logging on page unload
         const data = JSON.stringify({
             user_id: userId,
             activity_type: 'PAGE_UNLOAD',
