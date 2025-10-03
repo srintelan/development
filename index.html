@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Produksi</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+
+    /* Logo */
+    .logo {
+      width: 90px;
+      height: auto;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-top: 6px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Animasi teks */
+    .loading-text {
+      font-size: 1.2rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Responsif */
+    @media (max-width: 600px) {
+      .logo {
+        width: 70px;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border-width: 4px;
+      }
+      .loading-text {
+        font-size: 1rem;
+      }
+    }
+  </style>
+
+  <script type="module">
+    import { isAuthenticated } from './supabase-client.js';
+
+    // Tambahkan delay 3 detik sebelum redirect
+    setTimeout(() => {
+      if (isAuthenticated()) {
+        window.location.href = '/dashboard.html';
+      } else {
+        window.location.href = '/login.html';
+      }
+    }, 3000);
+  </script>
+</head>
+<body>
+  <div class="loading-container">
+    <!-- Ganti src dengan logo perusahaan -->
+    <img src="logo.png" alt="Logo Perusahaan" class="logo">
+    <div class="spinner"></div>
+    <p class="loading-text">Memuat Sistem Produksi...</p>
+  </div>
+</body>
+</html>
