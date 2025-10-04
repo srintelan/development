@@ -492,17 +492,26 @@
 
 @media (max-width:768px){
     .menu-grid {
-        display: flex;
-        overflow-x: auto;
-        gap: 15px;
-        padding-bottom: 10px;
-        scroll-snap-type: x mandatory;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
     }
 
     .menu-card {
-        min-width: 220px;
-        flex: 0 0 auto;
-        scroll-snap-align: start;
+        padding: 15px;
+    }
+
+    .menu-card i {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .menu-card h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .menu-card p {
+        font-size: 12px;
     }
 }
 
