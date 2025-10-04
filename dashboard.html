@@ -516,9 +516,10 @@
 }
 
 @media (max-width:768px){
-    /* Untuk card statistik di bagian atas */
+    /* Grid untuk statistik */
     .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
 
@@ -526,23 +527,17 @@
         padding: 15px;
     }
 
-    .stat-card i {
-        font-size: 26px;
-        margin-bottom: 6px;
+    /* Kalau jumlah card ganjil, biar item terakhir ke tengah */
+    .stats-grid > :last-child:nth-child(odd) {
+        grid-column: span 2;
+        justify-self: center;
+        width: 70%; /* bisa disesuaikan misal 60% - 80% */
     }
 
-    .stat-card h3 {
-        font-size: 14px;
-        margin-bottom: 5px;
-    }
-
-    .stat-card p {
-        font-size: 12px;
-    }
-
-    /* Untuk menu grid */
+    /* Grid untuk menu */
     .menu-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
 
@@ -550,18 +545,11 @@
         padding: 15px;
     }
 
-    .menu-card i {
-        font-size: 28px;
-        margin-bottom: 8px;
-    }
-
-    .menu-card h3 {
-        font-size: 14px;
-        margin-bottom: 5px;
-    }
-
-    .menu-card p {
-        font-size: 12px;
+    /* Kalau jumlah card ganjil di menu, juga tengah */
+    .menu-grid > :last-child:nth-child(odd) {
+        grid-column: span 2;
+        justify-self: center;
+        width: 70%;
     }
 }
 
