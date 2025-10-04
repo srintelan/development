@@ -79,18 +79,7 @@
     }
   </style>
 
-  <script type="module">
-    import { isAuthenticated } from './supabase-client.js';
-
-    // Tambahkan delay 3 detik sebelum redirect
-    setTimeout(() => {
-      if (isAuthenticated()) {
-        window.location.href = '/dashboard.html';
-      } else {
-        window.location.href = '/login.html';
-      }
-    }, 10000000000000000000000000000000000000000000000000000000000000);
-  </script>
+  
 </head>
 <body>
   <div class="loading-container">
