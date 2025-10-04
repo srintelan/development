@@ -489,6 +489,24 @@
  
 }
 
+
+@media (max-width:768px){
+    .menu-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding-bottom: 10px;
+        scroll-snap-type: x mandatory;
+    }
+
+    .menu-card {
+        min-width: 220px;
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+}
+
+
     </style>
 </head>
 <body>
